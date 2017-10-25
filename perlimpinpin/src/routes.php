@@ -4,6 +4,7 @@ use Slim\Http\Request;
 use Slim\Http\Response;
 
 include_once 'Service\DataService.php';
+include_once 'Service\DateBuildingService.php';
 
 // Routes
 $app->get('/[{date}]', function (Request $request, Response $response, array $args) {
@@ -12,40 +13,27 @@ $app->get('/[{date}]', function (Request $request, Response $response, array $ar
     // Sample log message
     $this->logger->info("Slim-Skeleton '/' route");
 
-    if(array_key_exists("date", $args) && validateDate($args["date"]))
-    {
-    	$date = new DateTime($args["date"]);
+    $dateBuildingService = new DateBuildingService();
+
+    // Par défaut, on initialise la date à aujourd'hui
+    $today = getdate();
+    $dateTime = new DateTime($today["year"]."-".$today["mon"]."-".$today["mday"]);
+
+    // Si l'argument date est correct, on l'utilise
+    if(array_key_exists("date", $args) && $dateBuildingService->isStringDateFormatValid($args["date"]) 
+		&& $dateBuildingService->isDateTimeNotAfterToday(new DateTime($args["date"]) == false))
+    {	
+    	$dateTime = new DateTime($args["date"]);
     }
-    else
-    {
-    	// Si la date n'est pas initialisée ou n'est pas valide, on fixe à aujourd'hui
-    	$today = getdate();
-    	$date = new DateTime($today["year"]."-".$today["mon"]."-".$today["mday"]);
-    }
 
-    $args["date"] = $date->format("Y-m-d");
+    $dates = $dateBuildingService->computeDates($dateTime);
 
-    // On calcule les dates des jours suivants et précédents
-    $dateBefore = clone $date;
-    $dateBefore->sub(new DateInterval('P1D'));
-    $args["dateBefore"] = $dateBefore->format("Y-m-d");
-
-    $dateAfter = clone $date;
-    $dateAfter->add(new DateInterval('P1D'));
-    $args["dateAfter"] = $dateAfter->format("Y-m-d");
-
-    // Appel au service
+    // Appel au service qui renvoie les donnée pour la date à afficher
     $dataService = new DataService();
-    $data = $dataService->GetDataByDate($date);
-    $args = array_merge($args, $data);
+    $data = $dataService->GetDataByDate($dateTime);
+
+    $args = array_merge($args, $dates);
 
     // Render index view
     return $this->renderer->render($response, 'index.phtml', $args);
 });
-
-// Méthode de validation de date
-function validateDate($date)
-{
-    $d = DateTime::createFromFormat('Y-m-d', $date);
-    return $d && $d->format('Y-m-d') === $date;
-}

@@ -10,7 +10,7 @@ class DataService
 
 	### Récupère l'expresion et sa définition en fonction de la date
 	# https://www.francebleu.fr/infos/insolite/top-15-des-expressions-en-breton-qu-utilise-au-quotidien-1484578069
-	function GetDataByDate($date)
+	function GetDataByDate($dateTime)
 	{
 		$result = array("expression" => "Il est parti en riboul à Bres’",
 						"definition" => "Quelqu’un qui est allé en piste, faire la fête quoi, et il a choisi d’aller à Brest",
