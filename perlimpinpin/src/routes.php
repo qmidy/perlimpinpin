@@ -28,11 +28,13 @@ $app->get('/[{date}]', function (Request $request, Response $response, array $ar
 
     $dates = $dateBuildingService->computeDates($dateTime);
 
+	$args = array_merge($args, $dates);
+
     // Appel au service qui renvoie les donnée pour la date à afficher
     $dataService = new DataService();
     $data = $dataService->GetDataByDate($dateTime);
 
-    $args = array_merge($args, $dates);
+    $args = array_merge($args, $data);
 
     // Render index view
     return $this->renderer->render($response, 'index.phtml', $args);
